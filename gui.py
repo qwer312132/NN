@@ -1,8 +1,8 @@
 import tkinter
 import os
-import perceptron  # Assuming perceptron contains create_plot function
+import perceptron  
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+import matplotlib.pyplot as plt
 # Global lists to store data
 x = []
 y = []
@@ -21,7 +21,7 @@ def readFile(file):
             c.append(int(line.split()[2]))
     
     # Create the plot using the perceptron module
-    fig = perceptron.create_plot(x, y, c)
+    fig = perceptron.create_plot(x, y, c, file)
     update_plot(fig)
 
 # Function to update the plot on the canvas
@@ -47,11 +47,12 @@ file_menu.add_cascade(label="File", menu=menu)
 root.config(menu=file_menu)
 
 # Create an initial empty figure and canvas
-import matplotlib.pyplot as plt
+
 fig, ax = plt.subplots()  # Initial empty plot
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.draw()
 canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
 
 # Start the Tkinter main loop
 tkinter.mainloop()
