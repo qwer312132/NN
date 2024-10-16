@@ -1,8 +1,8 @@
 import numpy as np
 def sigmoid(x):
     return 1/(1+np.exp(-x))
-def sigmoid_derivative(x):
-    return sigmoid(x)*(1-sigmoid(x))
+def sigmoid_derivative(output):
+    return output * (1 - output)
 class LAYER:
     def __init__(self, inputNum, outputNum, learning_rate):
         self.inputNum = inputNum
@@ -19,24 +19,22 @@ class LAYER:
         self.output = sigmoid(self.output)
         return self.output
 
+
     def backward(self, expected):
         if self.isOutputLayer:
-            print(self.input)
             error = expected - self.output
             delta = error * sigmoid_derivative(self.output)
-            weight = self.weight[1:,:]
-            self.weight = self.weight + self.learning_rate * (self.input.T * delta)
-            return delta*weight
+            weight = self.weight[1:]
+            weight_update = self.learning_rate * np.outer(self.input, delta)
+            self.weight += weight_update
+            return np.dot(delta, weight.T)
         else:
-            # print("input:",self.input)
-            # print("output:",self.output)
-            # print("expected:",expected.T)
-            # print("weight:",self.weight)           
-            delta = np.multiply(sigmoid_derivative(self.output), expected.T)
-            # print("delta:",delta)
-            weight = self.weight[1:,:]
-            self.weight = self.weight + (self.learning_rate * (self.input * delta.T)).T
-            return delta * weight
+            delta = expected * sigmoid_derivative(self.output)
+            weight = self.weight[1:]
+            weight_update = self.learning_rate * np.outer(self.input, delta)
+            self.weight += weight_update
+            return np.dot(delta, weight.T)
+
 class MLP:
     def __init__(self, inputNum, outputNum, hiddenNum, learning_rate):
         self.inputNum = inputNum
@@ -46,7 +44,7 @@ class MLP:
         self.layers = []
         self.layers.append(LAYER(inputNum, hiddenNum, learning_rate))
         self.layers.append(LAYER(hiddenNum, outputNum, learning_rate))
-        self.layers[1].isOutputLayer = True
+        self.layers[-1].isOutputLayer = True
 
     def forward(self, input):
         for layer in self.layers:
