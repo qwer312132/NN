@@ -2,6 +2,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import MLP
 def train(X, y, lr, epoch):
+    X = np.array(X)
     inputSize = X.shape[1]
     outputSize = 1
     hiddenSize = inputSize
