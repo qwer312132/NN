@@ -5,29 +5,43 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import read
+import run
+import numpy as np
 filename = ""
+
 def updateFileName(f):
     global file
     file.set(f)
     global filename
     filename = f
     print(filename)
+
 def trainfun():
+    global model
     X, y = read.readFile(filename)
     model = train.train(X, y, 0.1, 100)
-with open('dataset/edge.txt') as f:
-    startLine = f.readline().strip()
-    startx, starty, startTheta = map(int,startLine.split(','))
-    goalLine1 = f.readline().strip()
-    goalx1, goaly1 = map(int,goalLine1.split(','))
-    goalLine2 = f.readline().strip()
-    goalx2, goaly2 = map(int,goalLine2.split(','))
-    edgex = []
-    edgey = []
-    for line in f:
-        x, y = map(int,line.split(','))
-        edgex.append(x)
-        edgey.append(y)
+
+def runfun():
+    path = run.run(startx, starty, startTheta, model)
+    print(path)
+    updatePlot(path)
+
+def updatePlot(path):
+    global canvas
+    for widget in canvas.get_tk_widget().winfo_children():
+        widget.destroy()
+    canvas.get_tk_widget().grid_forget()
+    fig, ax = plt.subplots()
+    ax.plot(startx, starty, 'bo', markersize=10)
+    currentAxis = plt.gca()
+    currentAxis.add_patch(Rectangle((goalx1, goaly1), abs(goalx1 - goalx2), abs(goaly1 - goaly2), fill=None, edgecolor='black'))
+    ax.plot(edgex, edgey)
+    path = np.array(path)
+    ax.plot(path[:,0], path[:,1], 'ro')
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().grid(row=1, column=0, columnspan=4, sticky='nsew')
+startx, starty, startTheta, goalx1, goaly1, goalx2, goaly2, edgex, edgey = read.readEdge()
 root = tkinter.Tk()
 root.wm_title("Self Driving Car")
 root.grid_rowconfigure(1, weight=1)
@@ -59,7 +73,7 @@ frame.grid(row=2, column=0, columnspan=4)
 trainButton = tkinter.Button(frame, text="Train", command=trainfun)
 trainButton.grid(row=2, column=0, columnspan=2)
 
-runButton = tkinter.Button(frame, text="Run", command=trainfun)
+runButton = tkinter.Button(frame, text="Run", command=runfun)
 runButton.grid(row=2, column=2, columnspan=2)
 
 tkinter.mainloop()

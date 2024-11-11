@@ -3,6 +3,10 @@ def sigmoid(x):
     return 1/(1+np.exp(-x))
 def sigmoid_derivative(output):
     return output * (1 - output)
+def relu(x):
+    return np.maximum(0, x)
+def relu_derivative(output):
+    return np.where(output > 0, 1, 0)
 class LAYER:
     def __init__(self, inputNum, outputNum, learning_rate):
         self.inputNum = inputNum
@@ -16,20 +20,20 @@ class LAYER:
     def forward(self, input):
         self.input = np.insert(input, 0, -1)
         self.output = np.dot(self.input, self.weight)
-        self.output = sigmoid(self.output)
+        self.output = relu(self.output)
         return self.output
 
 
     def backward(self, expected):
         if self.isOutputLayer:
             error = expected - self.output
-            delta = error * sigmoid_derivative(self.output)
+            delta = error * relu_derivative(self.output)
             weight = self.weight[1:]
             weight_update = self.learning_rate * np.outer(self.input, delta)
             self.weight += weight_update
             return np.dot(delta, weight.T)
         else:
-            delta = expected * sigmoid_derivative(self.output)
+            delta = expected * relu_derivative(self.output)
             weight = self.weight[1:]
             weight_update = self.learning_rate * np.outer(self.input, delta)
             self.weight += weight_update
